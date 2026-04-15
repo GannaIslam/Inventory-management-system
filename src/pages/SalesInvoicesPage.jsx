@@ -129,7 +129,7 @@ export default function SalesInvoicesPage() {
       <h1 className="text-2xl font-bold text-slate-800">Sales Invoices</h1>
 
       {/* Summary */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-6 xl:grid-cols-4 gap-4">
         {[
           { label: 'Total Sales', value: invoices.length, color: 'text-slate-800' },
           { label: 'Completed', value: invoices.filter(i => i.status === 'Completed').length, color: 'text-emerald-600' },

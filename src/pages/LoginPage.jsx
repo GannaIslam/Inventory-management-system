@@ -88,31 +88,10 @@ export default function LoginPage() {
                   onClick={() => setShowPass((s) => !s)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                 >
-                  {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
 
-            {/* Remember / Forgot */}
-            <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={form.remember}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, remember: e.target.checked }))
-                  }
-                  className="w-4 h-4 rounded border-slate-300 text-[#164E63] focus:ring-[#164E63]"
-                />
-                Remember me
-              </label>
-              <button
-                type="button"
-                className="text-sm font-medium text-[#164E63] hover:underline"
-              >
-                Forget password ?
-              </button>
-            </div>
 
             {/* Error message */}
             {error && (
@@ -131,16 +110,6 @@ export default function LoginPage() {
               {loading && <Loader2 size={18} className="animate-spin" />}
               Login
             </button>
-
-            <p className="text-center text-xs text-slate-400 mt-4">
-              Demo credentials:
-              <br />
-              <strong>Admin:</strong> admin / admin123
-              <br />
-              <strong>Warehouse:</strong> warehouse / warehouse123
-              <br />
-              <strong>Cashier:</strong> cashier / cashier123
-            </p>
           </form>
         </div>
       </div>

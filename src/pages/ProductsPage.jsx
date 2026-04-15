@@ -327,9 +327,6 @@ export default function ProductsPage() {
             </option>
           ))}
         </select>
-        <button className="flex items-center gap-2 px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white hover:bg-slate-50 text-slate-600 transition-all">
-          <Download size={15} /> Export CSV
-        </button>
       </div>
 
       {/* Table card */}
@@ -347,7 +344,7 @@ export default function ProductsPage() {
               onClick={() => setModal({ mode: "add" })}
               className="flex items-center gap-2 px-4 py-2 text-sm bg-[#164E63] hover:bg-[#0E6680] text-white rounded-lg transition-all"
             >
-              <Plus size={15} /> + Add Product
+              <Plus size={15} />  Add Product
             </button>
           </div>
         </div>

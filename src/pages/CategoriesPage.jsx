@@ -214,7 +214,7 @@ export default function CategoriesPage() {
               onClick={() => setCatModal({ mode: "add" })}
               className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-[#164E63] hover:bg-[#0E6680] text-white rounded-lg transition-all"
             >
-              <Plus size={14} /> + Add
+              <Plus size={14} />  Add
             </button>
           </div>
           <div className="px-4 py-3 border-b border-slate-50">
@@ -278,7 +278,7 @@ export default function CategoriesPage() {
               onClick={() => setSubModal({ mode: "add" })}
               className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-[#164E63] hover:bg-[#0E6680] text-white rounded-lg transition-all"
             >
-              <Plus size={14} /> + Add
+              <Plus size={14} />  Add
             </button>
           </div>
           <div className="px-4 py-3 border-b border-slate-50">

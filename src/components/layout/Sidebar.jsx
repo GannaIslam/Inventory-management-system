@@ -148,7 +148,7 @@ export default function Sidebar({ isOpen, onClose }) {
       {/* Mobile overlay — hidden on desktop */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          className="fixed inset-0 bg-black/50 z-30 xl:hidden"
           onClick={onClose}
         />
       )}

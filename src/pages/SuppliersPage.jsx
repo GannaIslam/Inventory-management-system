@@ -163,7 +163,7 @@ export default function SuppliersPage() {
           onClick={() => setModal({ mode: "add" })}
           className="flex items-center gap-2 px-4 py-2.5 text-sm bg-[#164E63] hover:bg-[#0E6680] text-white rounded-lg transition-all"
         >
-          <Plus size={15} /> + Add Supplier
+          <Plus size={15} />  Add Supplier
         </button>
       </div>
 

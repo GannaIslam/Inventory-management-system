@@ -99,7 +99,7 @@ export default function PurchaseInvoicesPage() {
       <h1 className="text-2xl font-bold text-slate-800">Purchase Invoices</h1>
 
       {/* Summary */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {[
           { label: 'Total Invoices', value: invoices.length, color: 'text-slate-800' },
           { label: 'Pending', value: invoices.filter(i => i.status === 'Pending').length, color: 'text-amber-600' },
