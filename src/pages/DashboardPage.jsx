@@ -52,6 +52,9 @@ function StatCard({ label, value, sublabel, icon: Icon, variant = "default" }) {
 }
 
 export default function DashboardPage() {
+
+
+
   const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [recentSales, setRecentSales] = useState([]);

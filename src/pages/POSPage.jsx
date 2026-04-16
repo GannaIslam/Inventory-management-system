@@ -26,6 +26,7 @@ export default function POSPage() {
   const [taxPct, setTaxPct] = useState(5);
   const [saving, setSaving] = useState(false);
   const [receipt, setReceipt] = useState(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     Promise.all([
@@ -90,6 +91,7 @@ export default function POSPage() {
   const handleCheckout = async () => {
     if (cart.length === 0 || !selectedLocation) return;
     setSaving(true);
+    setError("");
     try {
       // Build request per OpenAPI CreateSalesInvoiceDTO spec
       const invoice = await salesService.create({
@@ -106,11 +108,20 @@ export default function POSPage() {
         })),
         notes: `Subtotal: $${subtotal.toFixed(2)}, Discount: $${discount.toFixed(2)}, Tax: $${tax.toFixed(2)}`,
       });
-      setReceipt(invoice);
-      setCart([]);
-      setCustomerName("");
-      setCustomerNumber("");
-      setDiscountPct(0);
+      if (invoice) {
+        setReceipt(invoice);
+        setCart([]);
+        setCustomerName("");
+        setCustomerNumber("");
+        setDiscountPct(0);
+        setError("");
+        setTimeout(() => setReceipt(null), 5000); // Auto hide receipt after 5 seconds
+      } else {
+        setError("Failed to process sale. Please try again.");
+      }
+    } catch (err) {
+      setError(err.message || "Error processing sale. Please try again.");
+      console.error("POS checkout error:", err);
     } finally {
       setSaving(false);
     }
@@ -340,6 +351,12 @@ export default function POSPage() {
               </button>
             ))}
           </div>
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-xs text-red-600">
+              {error}
+            </div>
+          )}
 
           <button
             onClick={handleCheckout}

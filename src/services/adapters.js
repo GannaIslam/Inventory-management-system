@@ -108,8 +108,6 @@ export function adaptSupplier(apiSupplier) {
     supplierCode: apiSupplier.supplierCode,
     name: apiSupplier.supplierName,
     supplierName: apiSupplier.supplierName,
-    company: apiSupplier.supplierName || "",
-    contactName: apiSupplier.contactName || "",
     phone: apiSupplier.phone,
     email: apiSupplier.email || "",
     address: apiSupplier.address,
@@ -230,7 +228,9 @@ export function adaptPurchaseInvoice(apiInvoice) {
 }
 
 export function adaptPurchaseInvoices(apiInvoices) {
-  return Array.isArray(apiInvoices) ? apiInvoices.map(adaptPurchaseInvoice) : [];
+  return Array.isArray(apiInvoices)
+    ? apiInvoices.map(adaptPurchaseInvoice)
+    : [];
 }
 
 // ──────────────────────────────────────────────
@@ -374,248 +374,137 @@ export function adaptBestSellingProduct(apiData) {
 }
 
 export function adaptBestSellingProducts(apiDataList) {
-  return Array.isArray(apiDataList) ? apiDataList.map(adaptBestSellingProduct) : [];
-}
-
-
-// ──────────────────────────────────────────────
-// Stock Ledger Adapter
-// ──────────────────────────────────────────────
-
-export function adaptStockItem(apiStock) {
-  if (!apiStock) return null;
-  return {
-    id: apiStock.ledgerId,
-    ledgerId: apiStock.ledgerId,
-    productId: apiStock.productId,
-    serial: apiStock.serialNumber || "",
-    serialNumber: apiStock.serialNumber || "",
-    product: apiStock.productName || "",
-    productName: apiStock.productName || "",
-    locationId: apiStock.locationId,
-    location: apiStock.locationCode,
-    locationCode: apiStock.locationCode,
-    block: apiStock.block,
-    aisle: apiStock.aisle,
-    shelf: apiStock.shelf,
-    qty: apiStock.qtyOnHand,
-    quantity: apiStock.qtyOnHand,
-    qtyOnHand: apiStock.qtyOnHand,
-    reorder: apiStock.reorderLevel,
-    reorderLevel: apiStock.reorderLevel,
-    isLowStock: apiStock.isLowStock,
-    lastMovedAt: apiStock.lastMovedAt,
-    updatedAt: apiStock.updatedAt,
-  };
-}
-
-export function adaptStockItems(apiStockItems) {
-  return Array.isArray(apiStockItems) ? apiStockItems.map(adaptStockItem) : [];
-}
-
-// ──────────────────────────────────────────────
-// Purchase Invoice Adapter
-// ──────────────────────────────────────────────
-
-export function adaptPurchaseInvoice(apiInvoice) {
-  if (!apiInvoice) return null;
-  return {
-    id: String(apiInvoice.invoiceNumber || apiInvoice.purchaseInvoiceId || ""),
-    purchaseInvoiceId: apiInvoice.purchaseInvoiceId,
-    invoiceNumber: apiInvoice.invoiceNumber,
-    supplierId: apiInvoice.supplierId,
-    supplier: apiInvoice.supplierName,
-    supplierName: apiInvoice.supplierName,
-    date: apiInvoice.invoiceDate,
-    deliveryDate: apiInvoice.deliveryDate,
-    invoiceDate: apiInvoice.invoiceDate,
-    total: apiInvoice.subTotal,
-    subTotal: apiInvoice.subTotal,
-    discount: apiInvoice.discountAmount,
-    discountAmount: apiInvoice.discountAmount,
-    tax: apiInvoice.taxAmount,
-    taxAmount: apiInvoice.taxAmount,
-    grandTotal: apiInvoice.totalAmount,
-    totalAmount: apiInvoice.totalAmount,
-    status: apiInvoice.status,
-    notes: apiInvoice.notes,
-    lines: Array.isArray(apiInvoice.lines)
-      ? apiInvoice.lines.map((line) => ({
-          id: line.lineId,
-          lineId: line.lineId,
-          productId: line.productId,
-          productName: line.productName,
-          locationId: line.locationId,
-          locationName: line.locationName,
-          quantity: line.quantity,
-          unitBuyingPrice: line.unitBuyingPrice,
-          discountPercent: line.discountPercent,
-          lineSubTotal: line.lineSubTotal,
-          lineDiscount: line.lineDiscount,
-          lineTotal: line.lineTotal,
-        }))
-      : [],
-  };
-}
-
-export function adaptPurchaseInvoices(apiInvoices) {
-  return Array.isArray(apiInvoices)
-    ? apiInvoices.map(adaptPurchaseInvoice)
-    : [];
-}
-
-// ──────────────────────────────────────────────
-// Sales Invoice Adapter
-// ──────────────────────────────────────────────
-
-export function adaptSalesInvoice(apiInvoice) {
-  if (!apiInvoice) return null;
-  return {
-    id: String(apiInvoice.invoiceNumber || apiInvoice.salesInvoiceId || ""),
-    salesInvoiceId: apiInvoice.salesInvoiceId,
-    invoiceNumber: apiInvoice.invoiceNumber,
-    date: apiInvoice.invoiceDate,
-    invoiceDate: apiInvoice.invoiceDate,
-    customer: apiInvoice.customerName,
-    customerName: apiInvoice.customerName,
-    customerNumber: apiInvoice.customerPhone,
-    customerPhone: apiInvoice.customerPhone,
-    total: apiInvoice.subTotal,
-    subTotal: apiInvoice.subTotal,
-    discount: apiInvoice.discountAmount,
-    discountAmount: apiInvoice.discountAmount,
-    tax: apiInvoice.taxAmount,
-    taxAmount: apiInvoice.taxAmount,
-    grandTotal: apiInvoice.totalAmount,
-    totalAmount: apiInvoice.totalAmount,
-    payment: apiInvoice.paymentMethod,
-    paymentMethod: apiInvoice.paymentMethod,
-    cashier: apiInvoice.cashierName,
-    cashierName: apiInvoice.cashierName,
-    status: apiInvoice.status,
-    notes: apiInvoice.notes,
-    lines: Array.isArray(apiInvoice.lines)
-      ? apiInvoice.lines.map((line) => ({
-          id: line.lineId,
-          lineId: line.lineId,
-          productId: line.productId,
-          productName: line.productName,
-          locationId: line.locationId,
-          locationName: line.locationName,
-          quantity: line.quantity,
-          unitSellingPrice: line.unitSellingPrice,
-          discountPercent: line.discountPercent,
-          lineSubTotal: line.lineSubTotal,
-          lineDiscount: line.lineDiscount,
-          lineTotal: line.lineTotal,
-        }))
-      : [],
-  };
-}
-
-export function adaptSalesInvoices(apiInvoices) {
-  return Array.isArray(apiInvoices) ? apiInvoices.map(adaptSalesInvoice) : [];
-}
-
-// ──────────────────────────────────────────────
-// Reports Adapter
-// ──────────────────────────────────────────────
-
-export function adaptMonthlyRevenue(apiData) {
-  if (!apiData) return null;
-  return {
-    month: apiData.month,
-    transactions: apiData.transactions,
-    revenue: apiData.revenue,
-    cogs: apiData.cogs,
-    profit: apiData.grossProfit,
-    grossProfit: apiData.grossProfit,
-  };
-}
-
-export function adaptMonthlyRevenues(apiDataList) {
-  return Array.isArray(apiDataList) ? apiDataList.map(adaptMonthlyRevenue) : [];
-}
-
-export function adaptBestSellingProduct(apiData) {
-  if (!apiData) return null;
-  return {
-    rank: apiData.rank,
-    productName: apiData.productName,
-    quantitySold: apiData.quantitySold,
-    revenue: apiData.revenue,
-    cogs: apiData.cogs,
-    profit: apiData.profit,
-  };
-}
-
-export function adaptBestSellingProducts(apiDataList) {
   return Array.isArray(apiDataList)
     ? apiDataList.map(adaptBestSellingProduct)
     : [];
 }
 
 // ──────────────────────────────────────────────
-// Dashboard Adapter
+// Slow Moving Products Report Adapter
 // ──────────────────────────────────────────────
 
-export function adaptDashboardStats(apiStats) {
-  if (!apiStats) return null;
-  return {
-    totalRevenue: apiStats.totalRevenue || 0,
-    totalCOGS: apiStats.totalCOGS || 0,
-    totalProfit: apiStats.totalProfit || 0,
-    totalSalesCount: apiStats.totalSalesCount || 0,
-    activeProductsCount: apiStats.activeProductsCount || 0,
-    totalInventoryValue: apiStats.totalInventoryValue || 0,
-    todaysRevenue: apiStats.todaysRevenue || 0,
-    todayRevenue: apiStats.todaysRevenue || 0, // Alternative naming
-    pendingPOCount: apiStats.pendingPOCount || 0,
-    pendingPurchases: apiStats.pendingPOCount || 0, // Alternative naming
-    slowMovingItemsCount: apiStats.slowMovingItemsCount || 0,
-    lowStockAlerts: apiStats.slowMovingItemsCount || 0, // Alternative naming
-  };
-}
-
-export function adaptStockAlert(apiAlert) {
-  if (!apiAlert) return null;
-  return {
-    productId: apiAlert.productId,
-    productName: apiAlert.productName,
-    qtyOnHand: apiAlert.qtyOnHand,
-    reorderLevel: apiAlert.reorderLevel,
-    locationName: apiAlert.locationName,
-  };
-}
-
-export function adaptStockAlerts(apiAlerts) {
-  return Array.isArray(apiAlerts) ? apiAlerts.map(adaptStockAlert) : [];
-}
-
-export function adaptTopSellingProduct(apiData) {
+export function adaptSlowMovingProduct(apiData) {
   if (!apiData) return null;
   return {
+    serialNumber: apiData.serialNumber,
     productName: apiData.productName,
-    totalQuantitySold: apiData.totalQuantitySold,
-    totalRevenueGenerated: apiData.totalRevenueGenerated,
+    categoryName: apiData.categoryName,
+    qtyOnHand: apiData.qtyOnHand,
+    lastSaleDate: apiData.lastSaleDate,
+    daysIdle: apiData.daysIdle,
   };
 }
 
-export function adaptTopSellingProducts(apiDataList) {
+export function adaptSlowMovingProducts(apiDataList) {
   return Array.isArray(apiDataList)
-    ? apiDataList.map(adaptTopSellingProduct)
+    ? apiDataList.map(adaptSlowMovingProduct)
     : [];
 }
 
-export function adaptSalesTrend(apiData) {
+// ──────────────────────────────────────────────
+// Inventory Valuation Report Adapter
+// ──────────────────────────────────────────────
+
+export function adaptInventoryValuation(apiData) {
   if (!apiData) return null;
   return {
-    month: apiData.month,
-    salesAmount: apiData.salesAmount,
-    orderCount: apiData.orderCount,
+    productName: apiData.productName,
+    categoryName: apiData.categoryName,
+    quantity: apiData.quantity,
+    unitCost: apiData.unitCost,
+    totalValue: apiData.totalValue,
   };
 }
 
-export function adaptSalesTrends(apiDataList) {
-  return Array.isArray(apiDataList) ? apiDataList.map(adaptSalesTrend) : [];
+export function adaptInventoryValuations(apiDataList) {
+  return Array.isArray(apiDataList)
+    ? apiDataList.map(adaptInventoryValuation)
+    : [];
+}
+
+// ──────────────────────────────────────────────
+// Supplier Balance Report Adapter
+// ──────────────────────────────────────────────
+
+export function adaptSupplierBalance(apiData) {
+  if (!apiData) return null;
+  return {
+    supplierId: apiData.supplierId,
+    supplierName: apiData.supplierName,
+    totalInvoiced: apiData.totalInvoiced,
+    totalPaid: apiData.totalPaid,
+    balance: apiData.balance,
+  };
+}
+
+export function adaptSupplierBalances(apiDataList) {
+  return Array.isArray(apiDataList)
+    ? apiDataList.map(adaptSupplierBalance)
+    : [];
+}
+
+// ──────────────────────────────────────────────
+// Stock By Location Report Adapter
+// ──────────────────────────────────────────────
+
+export function adaptStockByLocation(apiData) {
+  if (!apiData) return null;
+  return {
+    locationCode: apiData.locationCode,
+    block: apiData.block,
+    aisle: apiData.aisle,
+    shelf: apiData.shelf,
+    productName: apiData.productName,
+    quantity: apiData.quantity,
+    maxCapacity: apiData.maxCapacity,
+  };
+}
+
+export function adaptStockByLocations(apiDataList) {
+  return Array.isArray(apiDataList)
+    ? apiDataList.map(adaptStockByLocation)
+    : [];
+}
+
+// ──────────────────────────────────────────────
+// Reorder Alert Report Adapter
+// ──────────────────────────────────────────────
+
+export function adaptReorderAlert(apiData) {
+  if (!apiData) return null;
+  return {
+    productName: apiData.productName,
+    categoryName: apiData.categoryName,
+    currentQuantity: apiData.currentQuantity,
+    reorderLevel: apiData.reorderLevel,
+    recommendedOrderQty: apiData.recommendedOrderQty,
+  };
+}
+
+export function adaptReorderAlerts(apiDataList) {
+  return Array.isArray(apiDataList) ? apiDataList.map(adaptReorderAlert) : [];
+}
+
+// ──────────────────────────────────────────────
+// Supplier Payment Adapter
+// ──────────────────────────────────────────────
+
+export function adaptSupplierPayment(apiData) {
+  if (!apiData) return null;
+  return {
+    supplierPaymentId: apiData.supplierPaymentId,
+    supplierId: apiData.supplierId,
+    supplierName: apiData.supplierName,
+    amount: apiData.amount,
+    paymentDate: apiData.paymentDate,
+    paymentMethod: apiData.paymentMethod,
+    reference: apiData.reference,
+    notes: apiData.notes,
+  };
+}
+
+export function adaptSupplierPayments(apiDataList) {
+  return Array.isArray(apiDataList)
+    ? apiDataList.map(adaptSupplierPayment)
+    : [];
 }

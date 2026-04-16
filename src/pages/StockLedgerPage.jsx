@@ -10,15 +10,34 @@ function TransferForm({ item, locations, onSave, onClose, loading }) {
   const [targetLocationId, setTargetLocationId] = useState(
     item?.locationId || "",
   );
+  const [quantity, setQuantity] = useState(item?.qty || 1);
+  const [error, setError] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setError("");
+
+    if (!targetLocationId) {
+      setError("Please select a target location");
+      return;
+    }
+
+    const qty = parseInt(quantity);
+    if (isNaN(qty) || qty <= 0) {
+      setError("Quantity must be greater than 0");
+      return;
+    }
+
+    if (qty > item?.qty) {
+      setError(`Cannot transfer more than ${item?.qty} units available`);
+      return;
+    }
+
+    onSave(targetLocationId, qty);
+  };
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        onSave(targetLocationId);
-      }}
-      className="space-y-4"
-    >
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div className="bg-slate-50 rounded-lg p-4 space-y-1">
         <p className="text-sm font-semibold text-slate-800">{item?.product}</p>
         <p className="text-xs text-slate-500">
@@ -28,20 +47,49 @@ function TransferForm({ item, locations, onSave, onClose, loading }) {
           </span>
         </p>
         <p className="text-xs text-slate-500">
-          Stock Qty: <span className="font-semibold">{item?.qty} units</span>
+          Available Stock:{" "}
+          <span className="font-semibold">{item?.qty} units</span>
         </p>
       </div>
+
+      <div>
+        <label className="block text-xs font-medium text-slate-600 mb-1.5">
+          Quantity to Transfer *
+        </label>
+        <input
+          type="number"
+          min="1"
+          max={item?.qty}
+          value={quantity}
+          onChange={(e) => {
+            setQuantity(e.target.value);
+            setError("");
+          }}
+          className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#164E63] transition-all"
+          required
+        />
+        <p className="text-xs text-slate-400 mt-1">Max: {item?.qty} units</p>
+      </div>
+
       <Select
         label="Transfer to Location"
         value={targetLocationId}
         onChange={(e) => setTargetLocationId(e.target.value)}
       >
+        <option value="">Select Location</option>
         {locations.map((l) => (
           <option key={l.id} value={l.id}>
             {l.location} — {l.description}
           </option>
         ))}
       </Select>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-xs text-red-600">
+          {error}
+        </div>
+      )}
+
       <div className="flex gap-3 justify-end pt-2">
         <Button type="button" variant="secondary" onClick={onClose}>
           Cancel
@@ -83,6 +131,7 @@ export default function StockLedgerPage() {
   const [stock, setStock] = useState([]);
   const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [filterBlock, setFilterBlock] = useState("All");
   const [transferModal, setTransferModal] = useState(null);
@@ -90,19 +139,30 @@ export default function StockLedgerPage() {
 
   const load = async () => {
     setLoading(true);
-    const [s, l] = await Promise.all([
-      stockService.getAll(),
-      locationService.getAll(),
-    ]);
-    setStock(s);
-    setLocations(l.filter((l) => l.status === "Active"));
+    setError("");
+    try {
+      const [s, l] = await Promise.all([
+        stockService.getAll(),
+        locationService.getAll(),
+      ]);
+      setStock(s || []);
+      setLocations((l || []).filter((l) => l.status === "Active"));
+    } catch (err) {
+      setError("Failed to load stock data. Please try again.");
+      console.error("Stock ledger load error:", err);
+    }
     setLoading(false);
   };
   useEffect(() => {
     load();
   }, []);
 
-  const blocks = ["All", ...new Set(stock.map((s) => s.block))];
+  const blockStats = {};
+  stock.forEach((s) => {
+    if (!blockStats[s.block]) blockStats[s.block] = 0;
+    blockStats[s.block]++;
+  });
+  const blocks = ["All", ...Object.keys(blockStats).sort()];
 
   const filtered = stock.filter((s) => {
     const q = search.toLowerCase();
@@ -117,14 +177,14 @@ export default function StockLedgerPage() {
     return true;
   });
 
-  const handleTransfer = async (toLocationId) => {
+  const handleTransfer = async (toLocationId, quantity) => {
     setTransferring(true);
     try {
       await stockService.transfer(
         transferModal.productId,
         transferModal.locationId,
         toLocationId,
-        transferModal.qty,
+        quantity,
         null, // notes
       );
       await load();
@@ -140,6 +200,11 @@ export default function StockLedgerPage() {
 
   return (
     <div className="space-y-4">
+      {error && (
+        <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-2.5 text-sm font-medium">
+          <span>⚠️</span> {error}
+        </div>
+      )}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">Stock Ledger</h1>
@@ -216,7 +281,11 @@ export default function StockLedgerPage() {
           className="px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#164E63] min-w-32"
         >
           {blocks.map((b) => (
-            <option key={b}>{b}</option>
+            <option key={b} value={b}>
+              {b === "All"
+                ? "All Blocks"
+                : `Block ${b} (${blockStats[b]} items)`}
+            </option>
           ))}
         </select>
       </div>

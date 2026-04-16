@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 export default function LoginPage() {
+
   const navigate = useNavigate();
   const { login } = useAuth();
   const [form, setForm] = useState({
@@ -87,11 +88,9 @@ export default function LoginPage() {
                   type="button"
                   onClick={() => setShowPass((s) => !s)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
-                >
-                </button>
+                ></button>
               </div>
             </div>
-
 
             {/* Error message */}
             {error && (

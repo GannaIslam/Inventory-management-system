@@ -38,6 +38,7 @@ export default function CreatePurchasePage() {
   const [items, setItems] = useState([]);
   const [productSearch, setProductSearch] = useState("");
   const [searchFocus, setSearchFocus] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     Promise.all([
@@ -100,12 +101,19 @@ export default function CreatePurchasePage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (items.length === 0) return alert("Add at least one product.");
-    if (!selectedLocation) return alert("Please select a warehouse location.");
+    setError("");
+    if (items.length === 0) {
+      setError("Add at least one product.");
+      return;
+    }
+    if (!selectedLocation) {
+      setError("Please select a warehouse location.");
+      return;
+    }
     setSaving(true);
     try {
       // Build request per OpenAPI CreatePurchaseInvoiceDTO spec
-      await purchaseService.create({
+      const result = await purchaseService.create({
         invoiceNumber: generateInvoiceId(),
         supplierId: parseInt(supplierId),
         invoiceDate: date,
@@ -118,9 +126,21 @@ export default function CreatePurchasePage() {
           discountPercent: 0,
         })),
       });
-      setSaved(true);
-      setItems([]);
-      setNotes("");
+      if (result) {
+        setSaved(true);
+        setItems([]);
+        setNotes("");
+        setError("");
+        setTimeout(() => setSaved(false), 5000); // Auto hide success after 5 seconds
+      } else {
+        setError(
+          "Failed to save purchase invoice. Please check the form and try again.",
+        );
+      }
+    } catch (err) {
+      setError(
+        err.message || "Error saving purchase invoice. Please try again.",
+      );
     } finally {
       setSaving(false);
     }
@@ -140,6 +160,12 @@ export default function CreatePurchasePage() {
           </div>
         )}
       </div>
+
+      {error && (
+        <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-2.5 text-sm font-medium">
+          <span>⚠️</span> {error}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Invoice Header */}
