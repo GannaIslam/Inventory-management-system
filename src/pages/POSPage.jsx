@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Search, Plus, Trash2, Monitor, X } from "lucide-react";
-import { productService, salesService, locationService } from "../services/api";
+import { productService, salesService, stockService } from "../services/api";
 import { PageLoader } from "../components/ui/Feedback";
 import { useAuth } from "../hooks/useAuth";
 
@@ -11,11 +11,81 @@ function generateInvoiceId() {
   return `SI-${date}-${num}`;
 }
 
+function ProductCard({ product, onAddToCart }) {
+  const availableLocations = product.locations || [];
+  const defaultLocationId = availableLocations.length > 0 ? availableLocations[0].locationId : "";
+  const [selectedLocationId, setSelectedLocationId] = useState(defaultLocationId);
+
+  const handleAdd = () => {
+    if (!selectedLocationId) return;
+    const selectedLoc = availableLocations.find(
+      (l) => String(l.locationId) === String(selectedLocationId)
+    );
+    if (selectedLoc) {
+      onAddToCart(product, selectedLoc);
+    }
+  };
+
+  const selectedLocDetails = availableLocations.find(
+    (l) => String(l.locationId) === String(selectedLocationId)
+  );
+  const currentStock = selectedLocDetails ? selectedLocDetails.quantity : 0;
+
+  return (
+    <div className="bg-white border border-slate-100 rounded-xl p-4 text-left hover:border-[#164E63] hover:shadow-md transition-all group flex flex-col h-full">
+      <div className="flex-1 cursor-pointer" onClick={handleAdd}>
+        <div className="w-10 h-10 bg-slate-100 group-hover:bg-cyan-50 rounded-lg flex items-center justify-center mb-3 transition-colors">
+          <Monitor
+            size={20}
+            className="text-slate-400 group-hover:text-[#164E63]"
+          />
+        </div>
+        <p className="text-sm font-semibold text-slate-800 leading-tight mb-1">
+          {product.name}
+        </p>
+        <p className="text-xs text-slate-400">
+          {product.category} · {product.subcategory}
+        </p>
+        <div className="flex items-center justify-between mt-3 mb-3">
+          <span className="text-base font-bold text-[#164E63]">
+            ${product.sellPrice.toFixed(2)}
+          </span>
+          <span className="text-xs text-slate-400">
+            Stock: {currentStock}
+          </span>
+        </div>
+      </div>
+      <div className="mt-auto border-t border-slate-100 pt-3">
+        <select
+          value={selectedLocationId}
+          onChange={(e) => setSelectedLocationId(e.target.value)}
+          onClick={(e) => e.stopPropagation()}
+          className="w-full px-2 py-1.5 text-xs font-medium border border-slate-200 rounded text-slate-700 bg-slate-50 focus:outline-none focus:ring-1 focus:ring-[#164E63] mb-2"
+        >
+          {availableLocations.map((loc) => (
+            <option key={loc.locationId} value={loc.locationId}>
+              {loc.locationName} ({loc.quantity})
+            </option>
+          ))}
+        </select>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleAdd();
+          }}
+          disabled={!selectedLocationId || currentStock <= 0}
+          className="w-full py-1.5 bg-slate-100 hover:bg-[#164E63] hover:text-white text-slate-600 rounded text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Add to Cart
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function POSPage() {
   const { user } = useAuth();
   const [products, setProducts] = useState([]);
-  const [locations, setLocations] = useState([]);
-  const [selectedLocation, setSelectedLocation] = useState(null);
   const [loading, setLoading] = useState(true);
   const [cart, setCart] = useState([]);
   const [search, setSearch] = useState("");
@@ -30,16 +100,34 @@ export default function POSPage() {
 
   useEffect(() => {
     Promise.all([
-      productService.getAll().then((p) => {
-        setProducts(p.filter((p) => p.status === "Active" && p.stock > 0));
-      }),
-      locationService.getAll().then((locs) => {
-        setLocations(locs);
-        // Set first active location as default
-        const defaultLoc = locs.find((l) => l.isActive);
-        if (defaultLoc) setSelectedLocation(defaultLoc.locationId);
-      }),
-    ]).then(() => setLoading(false));
+      productService.getAll(),
+      stockService.getAll(),
+    ])
+      .then(([productsData, stocksData]) => {
+        const productsWithLocations = productsData.map((p) => {
+          const productStocks = stocksData.filter(
+            (s) => s.productId === p.id && s.qty > 0
+          );
+          return {
+            ...p,
+            locations: productStocks.map((s) => ({
+              locationId: s.locationId,
+              locationName: s.locationCode || s.location,
+              quantity: s.qty,
+            })),
+          };
+        });
+
+        const validProducts = productsWithLocations.filter(
+          (p) => p.status === "Active" && p.locations.length > 0
+        );
+        setProducts(validProducts);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Failed to load products and stock", err);
+        setLoading(false);
+      });
   }, []);
 
   const filteredProducts = products.filter(
@@ -49,19 +137,25 @@ export default function POSPage() {
       p.barcode?.includes(search),
   );
 
-  const addToCart = (product) => {
+  const addToCart = (product, selectedLocation) => {
+    const itemKey = `${product.id}-${selectedLocation.locationId}`;
     setCart((prev) => {
-      const existing = prev.find((i) => i.productId === product.id);
+      const existing = prev.find((i) => i.itemKey === itemKey);
       if (existing) {
+        if (existing.qty >= selectedLocation.quantity) return prev;
         return prev.map((i) =>
-          i.productId === product.id ? { ...i, qty: i.qty + 1 } : i,
+          i.itemKey === itemKey ? { ...i, qty: i.qty + 1 } : i,
         );
       }
       return [
         ...prev,
         {
+          itemKey,
           productId: product.id,
           productName: product.name,
+          locationId: selectedLocation.locationId,
+          locationName: selectedLocation.locationName,
+          maxQty: selectedLocation.quantity,
           price: product.sellPrice,
           qty: 1,
         },
@@ -69,18 +163,23 @@ export default function POSPage() {
     });
   };
 
-  const updateQty = (productId, qty) => {
+  const updateQty = (itemKey, qty) => {
     if (qty < 1) {
-      removeItem(productId);
+      removeItem(itemKey);
       return;
     }
     setCart((prev) =>
-      prev.map((i) => (i.productId === productId ? { ...i, qty } : i)),
+      prev.map((i) => {
+        if (i.itemKey === itemKey) {
+          return { ...i, qty: Math.min(qty, i.maxQty) };
+        }
+        return i;
+      }),
     );
   };
 
-  const removeItem = (productId) => {
-    setCart((prev) => prev.filter((i) => i.productId !== productId));
+  const removeItem = (itemKey) => {
+    setCart((prev) => prev.filter((i) => i.itemKey !== itemKey));
   };
 
   const subtotal = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
@@ -89,7 +188,7 @@ export default function POSPage() {
   const grandTotal = subtotal - discount + tax;
 
   const handleCheckout = async () => {
-    if (cart.length === 0 || !selectedLocation) return;
+    if (cart.length === 0) return;
     setSaving(true);
     setError("");
     try {
@@ -102,7 +201,7 @@ export default function POSPage() {
         cashierName: user?.username || "Unknown",
         lines: cart.map((item) => ({
           productId: item.productId,
-          locationId: selectedLocation,
+          locationId: item.locationId,
           quantity: item.qty,
           discountPercent: 0,
         })),
@@ -154,32 +253,7 @@ export default function POSPage() {
         <div className="flex-1 overflow-y-auto">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pb-4">
             {filteredProducts.map((p) => (
-              <button
-                key={p.id}
-                onClick={() => addToCart(p)}
-                className="bg-white border border-slate-100 rounded-xl p-4 text-left hover:border-[#164E63] hover:shadow-md transition-all group"
-              >
-                <div className="w-10 h-10 bg-slate-100 group-hover:bg-cyan-50 rounded-lg flex items-center justify-center mb-3 transition-colors">
-                  <Monitor
-                    size={20}
-                    className="text-slate-400 group-hover:text-[#164E63]"
-                  />
-                </div>
-                <p className="text-sm font-semibold text-slate-800 leading-tight mb-1">
-                  {p.name}
-                </p>
-                <p className="text-xs text-slate-400">
-                  {p.category} · {p.subcategory}
-                </p>
-                <div className="flex items-center justify-between mt-3">
-                  <span className="text-base font-bold text-[#164E63]">
-                    ${p.sellPrice.toFixed(2)}
-                  </span>
-                  <span className="text-xs text-slate-400">
-                    Stock: {p.stock}
-                  </span>
-                </div>
-              </button>
+              <ProductCard key={p.id} product={p} onAddToCart={addToCart} />
             ))}
             {filteredProducts.length === 0 && (
               <div className="col-span-2 sm:col-span-3 flex flex-col items-center justify-center py-12 text-slate-400">
@@ -225,12 +299,15 @@ export default function POSPage() {
           ) : (
             cart.map((item) => (
               <div
-                key={item.productId}
+                key={item.itemKey}
                 className="flex items-center gap-2 bg-slate-50 rounded-lg p-2.5"
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-slate-800 truncate">
                     {item.productName}
+                  </p>
+                  <p className="text-[10px] text-slate-500 font-medium truncate mb-0.5">
+                    {item.locationName}
                   </p>
                   <p className="text-xs text-slate-400">
                     ${item.price.toFixed(2)} ea.
@@ -238,7 +315,7 @@ export default function POSPage() {
                 </div>
                 <div className="flex items-center gap-1">
                   <button
-                    onClick={() => updateQty(item.productId, item.qty - 1)}
+                    onClick={() => updateQty(item.itemKey, item.qty - 1)}
                     className="w-6 h-6 flex items-center justify-center rounded bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 text-sm"
                   >
                     −
@@ -247,7 +324,7 @@ export default function POSPage() {
                     {item.qty}
                   </span>
                   <button
-                    onClick={() => updateQty(item.productId, item.qty + 1)}
+                    onClick={() => updateQty(item.itemKey, item.qty + 1)}
                     className="w-6 h-6 flex items-center justify-center rounded bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 text-sm"
                   >
                     +
@@ -257,7 +334,7 @@ export default function POSPage() {
                   ${(item.price * item.qty).toFixed(2)}
                 </span>
                 <button
-                  onClick={() => removeItem(item.productId)}
+                  onClick={() => removeItem(item.itemKey)}
                   className="text-slate-300 hover:text-red-400 p-0.5 transition-colors"
                 >
                   <X size={13} />
@@ -315,24 +392,7 @@ export default function POSPage() {
             </div>
           </div>
 
-          {/* Warehouse Location */}
-          <div>
-            <label className="block text-xs text-slate-400 mb-1">
-              Warehouse Location
-            </label>
-            <select
-              value={selectedLocation || ""}
-              onChange={(e) => setSelectedLocation(Number(e.target.value))}
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#164E63]"
-            >
-              <option value="">Select Location</option>
-              {locations.map((loc) => (
-                <option key={loc.locationId} value={loc.locationId}>
-                  {loc.block}/{loc.aisle}/{loc.shelf}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Warehouse Location Input Removed for individual component locations */}
 
           {/* Payment type */}
           <div className="flex gap-2">

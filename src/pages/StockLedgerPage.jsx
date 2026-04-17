@@ -145,7 +145,8 @@ export default function StockLedgerPage() {
         stockService.getAll(),
         locationService.getAll(),
       ]);
-      setStock(s || []);
+      const validStock = (s || []).filter((item) => item.qty > 0);
+      setStock(validStock);
       setLocations((l || []).filter((l) => l.status === "Active"));
     } catch (err) {
       setError("Failed to load stock data. Please try again.");
@@ -169,7 +170,6 @@ export default function StockLedgerPage() {
     if (
       q &&
       !s.product.toLowerCase().includes(q) &&
-      !s.serial.toLowerCase().includes(q) &&
       !s.location.toLowerCase().includes(q)
     )
       return false;
@@ -269,7 +269,7 @@ export default function StockLedgerPage() {
             className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
           />
           <input
-            placeholder="Search by product, serial or location"
+            placeholder="Search by product or location"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-9 pr-3 py-2.5 text-sm border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#164E63] transition-all"
@@ -302,7 +302,6 @@ export default function StockLedgerPage() {
             <thead className="bg-slate-50">
               <tr>
                 {[
-                  "SERIAL",
                   "PRODUCT",
                   "LOCATION",
                   "BLOCK",
@@ -323,7 +322,7 @@ export default function StockLedgerPage() {
             <tbody>
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={8}>
+                  <td colSpan={7}>
                     <EmptyState
                       title="No stock records found"
                       icon={BookOpen}
@@ -336,9 +335,6 @@ export default function StockLedgerPage() {
                   key={s.id}
                   className={`border-t border-slate-100 hover:bg-slate-50 transition-colors ${s.qty <= s.reorder ? "bg-red-50/30" : ""}`}
                 >
-                  <td className="px-5 py-3.5 text-sm font-mono text-slate-600">
-                    {s.serial}
-                  </td>
                   <td className="px-5 py-3.5 text-sm text-slate-800 font-medium max-w-44">
                     <div className="truncate">{s.product}</div>
                   </td>

@@ -121,7 +121,7 @@ export default function LoginPage() {
         <div className="absolute bottom-20 left-10 w-6 h-6 bg-cyan-400/20 rounded-sm rotate-6" />
 
         {/* Mock chart cards */}
-        <div className="relative z-10 flex flex-col gap-5 px-10 w-full max-w-sm">
+        <div className="relative z-10 flex flex-col gap-5 px-9 w-full max-w-md">
           {/* Line chart card */}
           <div className="bg-white rounded-2xl shadow-xl p-5">
             <p className="text-xs font-semibold text-slate-500 mb-3">
@@ -153,10 +153,10 @@ export default function LoginPage() {
                 strokeWidth="1"
                 strokeDasharray="5,3"
               />
-              <text x="215" y="8" fontSize="9" fill="#EF4444">
+              <text x="210" y="6" fontSize="9" fill="#EF4444">
                 Resistance
               </text>
-              <text x="220" y="23" fontSize="9" fill="#94A3B8">
+              <text x="220" y="41" fontSize="9" fill="#94A3B8">
                 Support
               </text>
             </svg>
@@ -168,7 +168,7 @@ export default function LoginPage() {
               <circle
                 cx="30"
                 cy="30"
-                r="24"
+                r="26"
                 fill="none"
                 stroke="#E2E8F0"
                 strokeWidth="8"
@@ -176,22 +176,22 @@ export default function LoginPage() {
               <circle
                 cx="30"
                 cy="30"
-                r="24"
+                r="26"
                 fill="none"
                 stroke="#0F172A"
                 strokeWidth="8"
-                strokeDasharray={`${0.59 * 2 * Math.PI * 24} ${2 * Math.PI * 24}`}
-                strokeDashoffset={2 * Math.PI * 24 * 0.25}
+                strokeDasharray={`${0.59 * 2 * Math.PI * 26} ${2 * Math.PI * 26}`}
+                strokeDashoffset={2 * Math.PI * 26 * 0.25}
               />
               <circle
                 cx="30"
                 cy="30"
-                r="24"
+                r="26"
                 fill="none"
                 stroke="#94A3B8"
                 strokeWidth="8"
-                strokeDasharray={`${0.28 * 2 * Math.PI * 24} ${2 * Math.PI * 24}`}
-                strokeDashoffset={-2 * Math.PI * 24 * 0.34}
+                strokeDasharray={`${0.28 * 2 * Math.PI * 26} ${2 * Math.PI * 26}`}
+                strokeDashoffset={-2 * Math.PI * 26 * 0.34}
               />
               <text
                 x="30"

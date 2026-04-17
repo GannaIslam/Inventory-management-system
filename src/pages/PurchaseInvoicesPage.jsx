@@ -102,11 +102,11 @@ export default function PurchaseInvoicesPage() {
     const q = search.toLowerCase();
     if (
       q &&
-      !inv.id.toLowerCase().includes(q) &&
-      !inv.supplier.toLowerCase().includes(q)
+      !(inv.id || "").toLowerCase().includes(q) &&
+      !(inv.supplier || "").toLowerCase().includes(q)
     )
       return false;
-    if (filterStatus !== "All Status" && inv.status !== filterStatus)
+    if (filterStatus !== "All Status" && (inv.status || "").toLowerCase() !== filterStatus.toLowerCase())
       return false;
     return true;
   });
@@ -135,7 +135,7 @@ export default function PurchaseInvoicesPage() {
           },
           {
             label: "Pending",
-            value: invoices.filter((i) => i.status === "Pending").length,
+            value: invoices.filter((i) => (i.status || "").toLowerCase() === "pending").length,
             color: "text-amber-600",
           },
           {
@@ -175,8 +175,8 @@ export default function PurchaseInvoicesPage() {
         >
           <option>All Status</option>
           <option>Paid</option>
-          <option>Pending</option>
-          <option>Cancelled</option>
+          <option>Confirmed</option>
+          <option>Draft</option>
         </select>
       </div>
 

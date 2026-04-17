@@ -131,7 +131,7 @@ export default function ReportsPage() {
 
   const { products, categories, suppliers, purchases, sales, stock } = data;
 
-  const completedSales = sales.filter((s) => s.status === "Completed");
+  const completedSales = sales.filter((s) => (s.status || "").toLowerCase() === "completed");
   const totalRevenue = completedSales.reduce((sum, s) => sum + s.grandTotal, 0);
   const totalCOGS = purchases.reduce((sum, p) => sum + p.grandTotal, 0);
   const grossProfit = totalRevenue - totalCOGS;
@@ -197,7 +197,6 @@ export default function ReportsPage() {
           value={`$${totalRevenue.toLocaleString("en", { minimumFractionDigits: 2 })}`}
           subValue={`${completedSales.length} completed sales`}
           icon={DollarSign}
-          trend={12}
           color="text-[#164E63]"
         />
         <MetricCard
@@ -205,7 +204,6 @@ export default function ReportsPage() {
           value={`$${grossProfit.toLocaleString("en", { minimumFractionDigits: 2 })}`}
           subValue="Revenue minus COGS"
           icon={TrendingUp}
-          trend={8}
           color={grossProfit >= 0 ? "text-emerald-600" : "text-red-600"}
         />
         <MetricCard

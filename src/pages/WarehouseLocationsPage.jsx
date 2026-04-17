@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Search, Plus, Pencil, Trash2, MapPin } from "lucide-react";
-import { locationService } from "../services/api";
+import { locationService, stockService } from "../services/api";
 import { StatusBadge } from "../components/ui/Badge";
 import {
   PageLoader,
@@ -121,11 +121,20 @@ export default function WarehouseLocationsPage() {
   const [saving, setSaving] = useState(false);
   const [confirm, setConfirm] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [stock, setStock] = useState([]);
 
   const load = async () => {
     setLoading(true);
-    const data = await locationService.getAll();
-    setLocations(data);
+    try {
+      const [locData, stockData] = await Promise.all([
+        locationService.getAll(),
+        stockService.getAll()
+      ]);
+      setLocations(locData || []);
+      setStock(stockData || []);
+    } catch (err) {
+      console.error("Failed to load locations", err);
+    }
     setLoading(false);
   };
   useEffect(() => {
@@ -274,18 +283,27 @@ export default function WarehouseLocationsPage() {
                   </td>
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-2">
+                       {/* Wrap row content in IIFE or just use variable if you can't, oh wait, I can just compute inside the array map */}
                       <button
                         onClick={() => setModal({ mode: "edit", item: l })}
                         className="text-slate-400 hover:text-[#164E63] transition-colors p-1"
                       >
                         <Pencil size={16} />
                       </button>
-                      <button
-                        onClick={() => setConfirm(l)}
-                        className="text-slate-400 hover:text-red-500 transition-colors p-1"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                      {(() => {
+                        const locationStock = stock.filter((s) => s.locationId === l.id && s.qty > 0).length;
+                        const isEmpty = locationStock === 0;
+                        return (
+                          <button
+                            onClick={() => isEmpty && setConfirm(l)}
+                            disabled={!isEmpty}
+                            title={!isEmpty ? "Cannot delete location with active stock" : "Delete location"}
+                            className={`${!isEmpty ? "text-slate-300 cursor-not-allowed" : "text-slate-400 hover:text-red-500"} transition-colors p-1`}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        );
+                      })()}
                     </div>
                   </td>
                 </tr>

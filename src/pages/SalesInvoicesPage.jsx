@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Search, Eye, Receipt, RotateCcw, XCircle } from "lucide-react";
-import { salesService } from "../services/api";
+import { salesService, dashboardService } from "../services/api";
 import {
   PageLoader,
   EmptyState,
@@ -104,14 +104,19 @@ export default function SalesInvoicesPage() {
   const [viewModal, setViewModal] = useState(null);
   const [confirmAction, setConfirmAction] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [stats, setStats] = useState(null);
 
   const load = async () => {
     setLoading(true);
     setError("");
     try {
-      const data = await salesService.getAll();
-      setInvoices(data || []);
-      if (!data || data.length === 0) {
+      const [salesData, statsData] = await Promise.all([
+        salesService.getAll(),
+        dashboardService.getStats()
+      ]);
+      setInvoices(salesData || []);
+      setStats(statsData);
+      if (!salesData || salesData.length === 0) {
         setError("");
       }
     } catch (err) {
@@ -128,13 +133,14 @@ export default function SalesInvoicesPage() {
     const q = search.toLowerCase();
     if (
       q &&
-      !inv.id.toLowerCase().includes(q) &&
-      !inv.customer.toLowerCase().includes(q)
+      !(inv.id || "").toLowerCase().includes(q) &&
+      !(inv.customer || "").toLowerCase().includes(q)
     )
       return false;
-    if (filterStatus !== "All Status" && inv.status !== filterStatus)
+    if (filterStatus !== "All Status" && (inv.status || "").toLowerCase() !== filterStatus.toLowerCase())
       return false;
-    if (filterPayment !== "All" && inv.payment !== filterPayment) return false;
+    if (filterPayment !== "All" && (inv.payment || "").toLowerCase() !== filterPayment.toLowerCase()) 
+      return false;
     return true;
   });
 
@@ -172,22 +178,22 @@ export default function SalesInvoicesPage() {
         {[
           {
             label: "Total Sales",
-            value: invoices.length,
+            value: stats ? stats.totalSalesCount : invoices.length,
             color: "text-slate-800",
           },
           {
             label: "Completed",
-            value: invoices.filter((i) => i.status === "Completed").length,
+            value: invoices.filter((i) => (i.status || "").toLowerCase() === "completed").length,
             color: "text-emerald-600",
           },
           {
             label: "Refunded",
-            value: invoices.filter((i) => i.status === "Refunded").length,
+            value: invoices.filter((i) => (i.status || "").toLowerCase() === "refunded").length,
             color: "text-amber-600",
           },
           {
             label: "Revenue",
-            value: `$${totalRevenue.toLocaleString("en", { minimumFractionDigits: 2 })}`,
+            value: `$${(stats ? stats.totalRevenue : totalRevenue).toLocaleString("en", { minimumFractionDigits: 2 })}`,
             color: "text-[#164E63]",
           },
         ].map((c) => (
