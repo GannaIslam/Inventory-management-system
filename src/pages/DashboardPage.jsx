@@ -5,7 +5,6 @@ import {
   Users,
   DollarSign,
   Clock,
-  AlertTriangle,
   ShoppingCart,
   Plus,
 } from "lucide-react";
@@ -113,7 +112,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           label="products"
           value={stats?.activeProductsCount?.toLocaleString() || "0"}
@@ -138,13 +137,6 @@ export default function DashboardPage() {
           value={stats?.pendingPOCount || "0"}
           sublabel="PO Count"
           icon={Clock}
-        />
-        <StatCard
-          label="Alerts"
-          value={String(stats?.slowMovingItemsCount || 0).padStart(2, "0")}
-          sublabel="Slow Moving"
-          icon={AlertTriangle}
-          variant="danger"
         />
       </div>
 

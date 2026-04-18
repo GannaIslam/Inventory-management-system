@@ -936,6 +936,13 @@ export const stockService = {
     });
     return result.success ? result.data : null;
   },
+
+  async delete(id) {
+    const result = await apiFetch(`/api/Warehouse/stock/${id}`, {
+      method: "DELETE",
+    });
+    return result.success;
+  },
 };
 
 export const locationService = {

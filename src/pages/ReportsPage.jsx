@@ -101,7 +101,6 @@ export default function ReportsPage() {
       // Connect to ALL report APIs as requested
       reportService.getMonthlyRevenueProfit().catch((e) => null),
       reportService.getBestSellingProducts().catch((e) => null),
-      reportService.getSlowMovingProducts().catch((e) => null),
       reportService.getInventoryValuation().catch((e) => null),
       reportService.getSupplierBalances().catch((e) => null),
       reportService.getStockByLocation().catch((e) => null),

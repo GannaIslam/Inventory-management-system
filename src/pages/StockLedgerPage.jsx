@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, BookOpen, ArrowRightLeft } from "lucide-react";
+import { Search, BookOpen, ArrowRightLeft, Trash2 } from "lucide-react";
 import { stockService, locationService } from "../services/api";
 import { PageLoader, EmptyState } from "../components/ui/Feedback";
 import Modal from "../components/ui/Modal";
@@ -145,8 +145,7 @@ export default function StockLedgerPage() {
         stockService.getAll(),
         locationService.getAll(),
       ]);
-      const validStock = (s || []).filter((item) => item.qty > 0);
-      setStock(validStock);
+      setStock(s || []);
       setLocations((l || []).filter((l) => l.status === "Active"));
     } catch (err) {
       setError("Failed to load stock data. Please try again.");
@@ -191,6 +190,18 @@ export default function StockLedgerPage() {
       setTransferModal(null);
     } finally {
       setTransferring(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this empty stock record?")) return;
+    try {
+      setLoading(true);
+      await stockService.delete(id);
+      await load();
+    } catch (err) {
+      setError("Failed to delete stock record.");
+      setLoading(false);
     }
   };
 
@@ -357,12 +368,24 @@ export default function StockLedgerPage() {
                     </span>
                   </td>
                   <td className="px-5 py-3.5">
-                    <button
-                      onClick={() => setTransferModal(s)}
-                      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-slate-200 hover:border-[#164E63] hover:text-[#164E63] text-slate-600 transition-all"
-                    >
-                      <ArrowRightLeft size={13} /> Transfer
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setTransferModal(s)}
+                        className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-slate-200 hover:border-[#164E63] hover:text-[#164E63] text-slate-600 transition-all whitespace-nowrap"
+                      >
+                        <ArrowRightLeft size={13} /> Transfer
+                      </button>
+                      
+                      {s.qty === 0 && (
+                        <button
+                          onClick={() => handleDelete(s.id)}
+                          className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-red-100 hover:bg-red-50 text-red-600 transition-all whitespace-nowrap"
+                          title="Delete empty stock record"
+                        >
+                          <Trash2 size={13} /> Delete
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

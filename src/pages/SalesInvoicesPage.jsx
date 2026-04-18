@@ -68,6 +68,34 @@ function InvoiceDetailModal({ invoice }) {
           <PaymentBadge payment={invoice.payment} />
         </div>
       </div>
+
+      <div className="border border-slate-100 rounded-lg overflow-hidden mt-4">
+        <table className="w-full text-xs sm:text-sm text-left">
+          <thead className="bg-slate-50 border-b border-slate-100">
+            <tr>
+              <th className="px-3 py-2 font-semibold text-slate-600">Product</th>
+              <th className="px-3 py-2 font-semibold text-slate-600">Location</th>
+              <th className="px-3 py-2 font-semibold text-slate-600 text-right">Qty</th>
+              <th className="px-3 py-2 font-semibold text-slate-600 text-right">Price</th>
+              <th className="px-3 py-2 font-semibold text-slate-600 text-right">Disc %</th>
+              <th className="px-3 py-2 font-semibold text-slate-600 text-right">Total</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-50">
+            {invoice.lines?.map((line, i) => (
+              <tr key={i}>
+                <td className="px-3 py-2.5 font-medium text-slate-800">{line.productName}</td>
+                <td className="px-3 py-2.5 text-slate-500 font-mono text-xs">{line.locationName}</td>
+                <td className="px-3 py-2.5 text-right text-slate-700">{line.quantity}</td>
+                <td className="px-3 py-2.5 text-right text-slate-700">${line.unitSellingPrice?.toFixed(2)}</td>
+                <td className="px-3 py-2.5 text-right text-emerald-600">{line.discountPercent}%</td>
+                <td className="px-3 py-2.5 text-right font-semibold text-slate-800">${line.lineTotal?.toFixed(2)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
       <div className="border-t border-slate-100 pt-4 space-y-2 text-sm">
         <div className="flex justify-between">
           <span className="text-slate-500">Subtotal</span>
@@ -289,7 +317,8 @@ export default function SalesInvoicesPage() {
               {filtered.map((inv) => (
                 <tr
                   key={inv.id}
-                  className="border-t border-slate-100 hover:bg-slate-50"
+                  onClick={() => setViewModal(inv)}
+                  className="border-t border-slate-100 hover:bg-slate-50 cursor-pointer group"
                 >
                   <td className="px-3 md:px-5 py-3.5 text-sm font-mono text-slate-600">
                     {inv.id}
@@ -329,8 +358,11 @@ export default function SalesInvoicesPage() {
                   <td className="px-3 md:px-5 py-3.5">
                     <div className="flex items-center gap-1">
                       <button
-                        onClick={() => setViewModal(inv)}
-                        className="text-slate-400 hover:text-[#164E63] p-1"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setViewModal(inv);
+                        }}
+                        className="text-slate-400 group-hover:text-[#164E63] p-1"
                       >
                         <Eye size={15} />
                       </button>
@@ -338,25 +370,27 @@ export default function SalesInvoicesPage() {
                       {inv.status === "Completed" && (
                         <>
                           <button
-                            onClick={() =>
+                            onClick={(e) => {
+                              e.stopPropagation();
                               setConfirmAction({
                                 type: "refund",
                                 id: inv.id,
                                 label: inv.id,
-                              })
-                            }
+                              });
+                            }}
                             className="text-slate-400 hover:text-amber-500 p-1"
                           >
                             <RotateCcw size={15} />
                           </button>
                           <button
-                            onClick={() =>
+                            onClick={(e) => {
+                              e.stopPropagation();
                               setConfirmAction({
                                 type: "void",
                                 id: inv.id,
                                 label: inv.id,
-                              })
-                            }
+                              });
+                            }}
                             className="text-slate-400 hover:text-red-500 p-1"
                           >
                             <XCircle size={15} />
@@ -376,6 +410,7 @@ export default function SalesInvoicesPage() {
         open={!!viewModal}
         onClose={() => setViewModal(null)}
         title="Sales Invoice Details"
+        size="xl"
       >
         <InvoiceDetailModal invoice={viewModal} />
       </Modal>
