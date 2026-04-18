@@ -45,24 +45,18 @@ export default function CreatePurchasePage() {
       productService.getAll(),
       supplierService.getAll(),
       locationService.getAll(),
-    ])
-      .then(([p, s, locs]) => {
-        setProducts(p);
-        const activeSup = s.filter((s) => s.status === "Active");
-        setSuppliers(activeSup);
-        setSupplierId(activeSup[0]?.supplierId || "");
+    ]).then(([p, s, locs]) => {
+      setProducts(p);
+      const activeSup = s.filter((s) => s.status === "Active");
+      setSuppliers(activeSup);
+      setSupplierId(activeSup[0]?.supplierId || "");
 
-        setLocations(locs);
-        const defaultLoc = locs.find((l) => l.isActive);
-        if (defaultLoc) setSelectedLocation(defaultLoc.locationId);
+      setLocations(locs);
+      const defaultLoc = locs.find((l) => l.isActive);
+      if (defaultLoc) setSelectedLocation(defaultLoc.locationId);
 
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError("Failed to load necessary data. Please check your connection.");
-        console.error("Data load error:", err);
-        setLoading(false);
-      });
+      setLoading(false);
+    });
   }, []);
 
   const filteredProducts =
@@ -270,7 +264,7 @@ export default function CreatePurchasePage() {
                       </p>
                     </div>
                     <span className="text-[#164E63] font-semibold">
-                      ${(p.buyPrice || 0).toFixed(2)}
+                      ${p.buyPrice.toFixed(2)}
                     </span>
                   </button>
                 ))}

@@ -2,7 +2,7 @@
 
 // Base URL for all API calls
 const API_BASE_URL = "https://inventra.runasp.net";
-// https://inventra.runasp.net
+
 /**
  * Get JWT token from localStorage
  */

@@ -14,16 +14,14 @@ import Select from "../components/ui/Select";
 
 function LocationForm({ initial, onSave, onClose, loading }) {
   const [form, setForm] = useState(
-    initial
-      ? { ...initial, maxCapacity: initial.maxCapacity ?? "" }
-      : {
-          block: "",
-          aisle: "",
-          shelf: "",
-          description: "",
-          maxCapacity: "",
-          status: "Active",
-        },
+    initial || {
+      block: "",
+      aisle: "",
+      shelf: "",
+      description: "",
+      maxCapacity: "",
+      status: "Active",
+    },
   );
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -41,13 +39,10 @@ function LocationForm({ initial, onSave, onClose, loading }) {
       shelf: form.shelf,
       locationCode: location,
       description: form.description,
-      maxCapacity: form.maxCapacity !== "" && form.maxCapacity !== null && form.maxCapacity !== undefined
-        ? parseInt(form.maxCapacity, 10)
-        : null,
+      maxCapacity: +form.maxCapacity,
       isActive,
     });
   };
-
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -281,7 +276,7 @@ export default function WarehouseLocationsPage() {
                     <div className="truncate">{l.description}</div>
                   </td>
                   <td className="px-5 py-3.5 text-sm text-slate-700">
-                    {l.maxCapacity > 0 ? l.maxCapacity.toLocaleString() : <span className="text-slate-400">—</span>}
+                    {l.maxCapacity}
                   </td>
                   <td className="px-5 py-3.5">
                     <StatusBadge status={l.status} />

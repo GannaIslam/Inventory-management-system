@@ -56,25 +56,18 @@ function ProductCard({ product, onAddToCart }) {
         </div>
       </div>
       <div className="mt-auto border-t border-slate-100 pt-3">
-        {availableLocations.length > 1 ? (
-          <select
-            value={selectedLocationId}
-            onChange={(e) => setSelectedLocationId(e.target.value)}
-            onClick={(e) => e.stopPropagation()}
-            className="w-full px-2 py-1.5 text-xs font-medium border border-slate-200 rounded text-slate-700 bg-slate-50 focus:outline-none focus:ring-1 focus:ring-[#164E63] mb-2 cursor-pointer"
-          >
-            {availableLocations.map((loc) => (
-              <option key={loc.locationId} value={loc.locationId}>
-                {loc.locationName} ({loc.quantity} units)
-              </option>
-            ))}
-          </select>
-        ) : availableLocations.length === 1 ? (
-          <div className="w-full px-2 py-1.5 text-[10px] font-semibold text-slate-500 bg-slate-50 border border-slate-100 rounded mb-2 flex justify-between items-center">
-             <span className="truncate">{availableLocations[0].locationName}</span>
-             <span className="shrink-0 ml-1 opacity-70">{availableLocations[0].quantity} left</span>
-          </div>
-        ) : null}
+        <select
+          value={selectedLocationId}
+          onChange={(e) => setSelectedLocationId(e.target.value)}
+          onClick={(e) => e.stopPropagation()}
+          className="w-full px-2 py-1.5 text-xs font-medium border border-slate-200 rounded text-slate-700 bg-slate-50 focus:outline-none focus:ring-1 focus:ring-[#164E63] mb-2"
+        >
+          {availableLocations.map((loc) => (
+            <option key={loc.locationId} value={loc.locationId}>
+              {loc.locationName} ({loc.quantity})
+            </option>
+          ))}
+        </select>
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -154,12 +147,6 @@ export default function POSPage() {
           i.itemKey === itemKey ? { ...i, qty: i.qty + 1 } : i,
         );
       }
-      
-      // Safety: Only add if price > 0 (unless specifically allowed, but for most items we want a price)
-      if (product.sellPrice <= 0 && product.name.toLowerCase().includes("test") === false) {
-        console.warn(`Attempted to add product ${product.name} with 0 price.`);
-      }
-
       return [
         ...prev,
         {
@@ -169,7 +156,7 @@ export default function POSPage() {
           locationId: selectedLocation.locationId,
           locationName: selectedLocation.locationName,
           maxQty: selectedLocation.quantity,
-          price: product.sellPrice || 0,
+          price: product.sellPrice,
           qty: 1,
         },
       ];
@@ -212,14 +199,12 @@ export default function POSPage() {
         customerPhone: customerNumber || "",
         paymentMethod: payment,
         cashierName: user?.username || "Unknown",
-        lines: cart
-          .filter(item => item.qty > 0 && item.price > 0) // Filter out ghosts
-          .map((item) => ({
-            productId: item.productId,
-            locationId: item.locationId,
-            quantity: item.qty,
-            discountPercent: 0,
-          })),
+        lines: cart.map((item) => ({
+          productId: item.productId,
+          locationId: item.locationId,
+          quantity: item.qty,
+          discountPercent: 0,
+        })),
         notes: `Subtotal: $${subtotal.toFixed(2)}, Discount: $${discount.toFixed(2)}, Tax: $${tax.toFixed(2)}`,
       });
       if (invoice) {

@@ -57,7 +57,7 @@ function InvoiceDetailModal({ invoice }) {
         </div>
         <div>
           <p className="text-slate-400 text-xs mb-1">Cashier</p>
-          <p className="text-slate-700 font-medium">{invoice.cashier}</p>
+          <p className="text-slate-700">{invoice.cashier}</p>
         </div>
         <div>
           <p className="text-slate-400 text-xs mb-1">Date</p>
@@ -67,69 +67,7 @@ function InvoiceDetailModal({ invoice }) {
           <p className="text-slate-400 text-xs mb-1">Payment Method</p>
           <PaymentBadge payment={invoice.payment} />
         </div>
-        {(() => {
-          const uniqueLocs = [...new Set(invoice.lines?.map(l => l.locationName))].filter(Boolean);
-          if (uniqueLocs.length === 1) {
-            return (
-              <div className="sm:col-span-2 bg-slate-50 rounded-lg p-2.5 border border-slate-200 mt-1">
-                <p className="text-slate-500 text-[10px] uppercase font-bold mb-0.5">Primary Storage Location</p>
-                <p className="text-slate-800 font-mono font-bold text-xs">{uniqueLocs[0]}</p>
-              </div>
-            );
-          }
-          return null;
-        })()}
       </div>
-      <div className="border-t border-slate-100 pt-4">
-        <p className="text-slate-800 font-bold text-sm mb-3">Sold Items</p>
-        <div className="bg-white rounded-lg overflow-hidden border border-slate-200">
-          <table className="w-full text-xs text-left">
-            <thead className="bg-slate-50 font-bold text-slate-700 border-b border-slate-200">
-              <tr>
-                <th className="px-3 py-2.5">Product</th>
-                {(() => {
-                  const uniqueLocs = [...new Set(invoice.lines?.map(l => l.locationName))].filter(Boolean);
-                  return uniqueLocs.length > 1 ? <th className="px-3 py-2.5">Location</th> : null;
-                })()}
-                <th className="px-3 py-2.5 text-right">Unit Price</th>
-                <th className="px-3 py-2.5 text-center">Qty</th>
-                <th className="px-3 py-2.5 text-right">Total</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {(() => {
-                const filteredLines = invoice.lines?.filter(l => l.quantity > 0 && l.lineTotal > 0) || [];
-                const uniqueLocs = [...new Set(filteredLines.map(l => l.locationName))].filter(Boolean);
-                const showLoc = uniqueLocs.length > 1;
-                
-                if (filteredLines.length === 0 && invoice.lines?.length > 0) {
-                   // Fallback if filtering removed everything (e.g. all 0 price but non-zero qty)
-                   return invoice.lines.map((line) => (
-                    <tr key={line.id} className="text-slate-700 hover:bg-slate-50 transition-colors">
-                      <td className="px-3 py-2.5 font-medium">{line.productName}</td>
-                      {showLoc && <td className="px-3 py-2.5 font-mono text-[10px]">{line.locationName || "—"}</td>}
-                      <td className="px-3 py-2.5 text-right">${line.unitSellingPrice?.toFixed(2)}</td>
-                      <td className="px-3 py-2.5 text-center">{line.quantity}</td>
-                      <td className="px-3 py-2.5 text-right font-semibold text-slate-900">${line.lineTotal?.toFixed(2)}</td>
-                    </tr>
-                   ));
-                }
-
-                return filteredLines.map((line) => (
-                  <tr key={line.id} className="text-slate-700 hover:bg-slate-50 transition-colors">
-                    <td className="px-3 py-2.5 font-medium">{line.productName}</td>
-                    {showLoc && <td className="px-3 py-2.5 font-mono text-[10px]">{line.locationName || "—"}</td>}
-                    <td className="px-3 py-2.5 text-right">${line.unitSellingPrice?.toFixed(2)}</td>
-                    <td className="px-3 py-2.5 text-center">{line.quantity}</td>
-                    <td className="px-3 py-2.5 text-right font-semibold text-slate-900">${line.lineTotal?.toFixed(2)}</td>
-                  </tr>
-                ));
-              })()}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
       <div className="border-t border-slate-100 pt-4 space-y-2 text-sm">
         <div className="flex justify-between">
           <span className="text-slate-500">Subtotal</span>
@@ -145,9 +83,9 @@ function InvoiceDetailModal({ invoice }) {
           <span className="text-slate-500">Tax</span>
           <span className="font-medium">${invoice.tax?.toFixed(2)}</span>
         </div>
-        <div className="flex justify-between border-t border-slate-200 pt-3">
-          <span className="font-bold text-slate-900">Grand Total</span>
-          <span className="font-bold text-xl text-slate-900">
+        <div className="flex justify-between border-t border-slate-100 pt-2">
+          <span className="font-semibold text-slate-800">Grand Total</span>
+          <span className="font-bold text-lg text-[#164E63]">
             ${invoice.grandTotal?.toFixed(2)}
           </span>
         </div>
@@ -351,8 +289,7 @@ export default function SalesInvoicesPage() {
               {filtered.map((inv) => (
                 <tr
                   key={inv.id}
-                  onClick={() => setViewModal(inv)}
-                  className="border-t border-slate-100 hover:bg-slate-50 transition-colors cursor-pointer group"
+                  className="border-t border-slate-100 hover:bg-slate-50"
                 >
                   <td className="px-3 md:px-5 py-3.5 text-sm font-mono text-slate-600">
                     {inv.id}
@@ -439,7 +376,6 @@ export default function SalesInvoicesPage() {
         open={!!viewModal}
         onClose={() => setViewModal(null)}
         title="Sales Invoice Details"
-        size="lg"
       >
         <InvoiceDetailModal invoice={viewModal} />
       </Modal>
