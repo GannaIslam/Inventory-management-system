@@ -221,7 +221,7 @@ export default function ProductsPage() {
     return true;
   });
 
-  // Helper to map API data to UI format
+  // Helper to map API data to UI format (for display in table)
   const mapProduct = (p) => ({
     id: p.productId,
     productId: p.productId,
@@ -234,8 +234,27 @@ export default function ProductsPage() {
     subcategoryId: p.subcategoryId,
     buyPrice: p.buyingPrice,
     sellPrice: p.sellingPrice,
+    unit: p.unit,
+    reorderLevel: p.reorderLevel,
+    notes: p.notes,
     status: p.isActive ? "Active" : "Inactive",
     isActive: p.isActive,
+  });
+
+  // Helper to transform mapped product back to form format for editing
+  const transformForEdit = (mapped) => ({
+    id: mapped.id,
+    serialNumber: mapped.serialNumber,
+    productName: mapped.name,
+    barcode: mapped.barcode,
+    categoryId: String(mapped.categoryId),
+    subcategoryId: String(mapped.subcategoryId),
+    buyingPrice: mapped.buyPrice,
+    sellingPrice: mapped.sellPrice,
+    unit: mapped.unit || "",
+    reorderLevel: mapped.reorderLevel || "",
+    notes: mapped.notes || "",
+    isActive: mapped.isActive,
   });
 
   const handleSave = async (form) => {
@@ -413,7 +432,7 @@ export default function ProductsPage() {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() =>
-                            setModal({ mode: "edit", product: mapped })
+                            setModal({ mode: "edit", product: transformForEdit(mapped) })
                           }
                           className="text-slate-400 hover:text-[#164E63] transition-colors p-1"
                         >
